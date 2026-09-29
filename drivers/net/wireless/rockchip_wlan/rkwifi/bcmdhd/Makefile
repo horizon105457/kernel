@@ -68,7 +68,6 @@ DHDCFLAGS = -Wall -Wstrict-prototypes -Wno-date-time -Wno-strict-prototypes   \
 	-DENABLE_INSMOD_NO_FW_LOAD
 
 DHDCFLAGS += -Wframe-larger-than=2048
-DHDCFLAGS += -Wno-error=missing-prototypes -Wno-error=missing-declarations -Wno-error=empty-body -Wno-error=array-bounds $(call cc-option, -Wno-error=restrict) -Wno-error=attribute-warning
 
 DHDOFILES = aiutils.o siutils.o sbutils.o                                 \
 	bcmutils.o bcmwifi_channels.o bcmxtlv.o bcm_app_utils.o bcmstdlib_s.o \
@@ -327,7 +326,7 @@ ifneq ($(CONFIG_CFG80211),)
 ifneq ($(CONFIG_BCMDHD_SDIO),)
 	DHDCFLAGS += -DRXF_DEQUEUE_ON_BUSY
 endif
-	DHDCFLAGS += -DWL_STATIC_IF
+#	DHDCFLAGS += -DWL_STATIC_IF
 endif
 endif
 
