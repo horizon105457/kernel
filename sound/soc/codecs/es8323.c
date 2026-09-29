@@ -665,6 +665,7 @@ static int es8323_set_bias_level(struct snd_soc_component *component,
 		snd_soc_component_write(component, ES8323_CHIPLOPOW2, 0x00);
 		snd_soc_component_write(component, ES8323_CHIPPOWER, 0x00);
 		snd_soc_component_write(component, ES8323_ADCPOWER, 0x59);
+		snd_soc_component_write(component, ES8323_ADCCONTROL4, 0x4c);
 		break;
 	case SND_SOC_BIAS_STANDBY:
 		dev_dbg(component->dev, "%s standby\n", __func__);
@@ -755,9 +756,6 @@ static int es8323_resume(struct snd_soc_component *component)
 	snd_soc_component_write(component, 0x31, es8323_DEF_VOL);
 	snd_soc_component_write(component, 0x30, es8323_DEF_VOL);
 	snd_soc_component_write(component, 0x19, 0x02);
-
-	es8323_set_bias_level(component, SND_SOC_BIAS_OFF);
-
 	return 0;
 }
 
@@ -821,7 +819,7 @@ static int es8323_probe(struct snd_soc_component *component)
 	usleep_range(18000, 20000);
 	snd_soc_component_write(component, 0x04, 0x3C);
 
-	es8323_set_bias_level(component, SND_SOC_BIAS_OFF);
+	es8323_set_bias_level(component, SND_SOC_BIAS_STANDBY);
 	return 0;
 }
 
