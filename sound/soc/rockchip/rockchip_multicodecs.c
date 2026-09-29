@@ -69,7 +69,6 @@ struct multicodecs_data {
 	unsigned int mclk_fs;
 	unsigned int *mclk_fs_map;
 	bool codec_hp_det;
-	bool headset_unplugging;
 	u32 num_keys;
 	u32 last_key;
 	u32 keyup_voltage;
@@ -153,10 +152,6 @@ static void mc_keys_poll(struct input_dev *input)
 	u32 diff, closest = 0xffffffff;
 	int keycode = 0;
 
-	/* Suppress spurious key events during headset unplug */
-	if (mc_data->headset_unplugging)
-		return;
-
 	ret = iio_read_channel_processed(mc_data->adc, &value);
 	if (unlikely(ret < 0)) {
 		/* Forcibly release key if any was pressed */
@@ -223,6 +218,27 @@ static int mc_keys_load_keymap(struct device *dev,
 	return 0;
 }
 
+#ifdef CONFIG_SND_SOC_AW87XXX
+extern int aw87xxx_set_profile(int dev_index, char *profile);
+
+static char *aw_profile[] = {"Music", "Off"};
+enum aw87xxx_dev_index {
+	AW_DEV_0 = 0,
+	AW_DEV_1 = 1,
+};
+
+static int hook_spk_aw87xxx(int id, int on)
+{
+	pr_info("%s id: %d, on: %d\n", __func__, id, on);
+	if(on)
+		aw87xxx_set_profile(id, aw_profile[1]);
+	else
+		aw87xxx_set_profile(id, aw_profile[0]);
+
+	return 0;
+}
+#endif
+
 static void adc_jack_handler(struct work_struct *work)
 {
 	struct multicodecs_data *mc_data = container_of(to_delayed_work(work),
@@ -231,8 +247,10 @@ static void adc_jack_handler(struct work_struct *work)
 	struct snd_soc_jack *jack_headset = mc_data->jack_headset;
 	int adc, ret = 0;
 
-	/* Reset unplugging flag before processing jack state */
-	mc_data->headset_unplugging = false;
+#ifdef CONFIG_SND_SOC_AW87XXX
+	hook_spk_aw87xxx(AW_DEV_0, gpiod_get_value(mc_data->hp_det_gpio));
+	hook_spk_aw87xxx(AW_DEV_1, gpiod_get_value(mc_data->hp_det_gpio));
+#endif
 
 	if (!gpiod_get_value(mc_data->hp_det_gpio)) {
 		snd_soc_jack_report(jack_headset, 0, SND_JACK_HEADSET);
@@ -242,12 +260,6 @@ static void adc_jack_handler(struct work_struct *work)
 				EXTCON_JACK_MICROPHONE, false);
 		if (mc_data->poller)
 			mc_keys_poller_stop(mc_data->poller);
-
-		if (mc_data->last_key) {
-			input_report_key(mc_data->input, mc_data->last_key, 0);
-			input_sync(mc_data->input);
-			mc_data->last_key = 0;
-		}
 
 		return;
 	}
@@ -269,13 +281,12 @@ static void adc_jack_handler(struct work_struct *work)
 		snd_soc_jack_report(jack_headset,
 				    snd_soc_jack_get_type(jack_headset, adc),
 				    SND_JACK_HEADSET);
+		extcon_set_state_sync(mc_data->extcon, EXTCON_JACK_HEADPHONE, true);
 
 		if (snd_soc_jack_get_type(jack_headset, adc) == SND_JACK_HEADSET) {
 			extcon_set_state_sync(mc_data->extcon, EXTCON_JACK_MICROPHONE, true);
 			if (mc_data->poller)
 				mc_keys_poller_start(mc_data->poller);
-		} else {
-			extcon_set_state_sync(mc_data->extcon, EXTCON_JACK_HEADPHONE, true);
 		}
 	}
 };
@@ -283,10 +294,6 @@ static void adc_jack_handler(struct work_struct *work)
 static irqreturn_t headset_det_irq_thread(int irq, void *data)
 {
 	struct multicodecs_data *mc_data = (struct multicodecs_data *)data;
-
-	/* Immediately mark unplugging to suppress spurious key events */
-	if (!gpiod_get_value(mc_data->hp_det_gpio))
-		mc_data->headset_unplugging = true;
 
 	queue_delayed_work(system_power_efficient_wq, &mc_data->handler, msecs_to_jiffies(200));
 
@@ -387,8 +394,8 @@ static const struct snd_kcontrol_new mc_controls[] = {
 static int rk_multicodecs_hw_params(struct snd_pcm_substream *substream,
 				    struct snd_pcm_hw_params *params)
 {
-	struct snd_soc_pcm_runtime *rtd = snd_soc_substream_to_rtd(substream);
-	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	struct snd_soc_pcm_runtime *rtd = asoc_substream_to_rtd(substream);
+	struct snd_soc_dai *cpu_dai = asoc_rtd_to_cpu(rtd, 0);
 	struct snd_soc_dai *codec_dai;
 	struct multicodecs_data *mc_data = snd_soc_card_get_drvdata(rtd->card);
 	unsigned int mclk;
@@ -428,7 +435,7 @@ static int rk_dailink_init(struct snd_soc_pcm_runtime *rtd)
 	struct multicodecs_data *mc_data = snd_soc_card_get_drvdata(rtd->card);
 	struct snd_soc_card *card = rtd->card;
 	struct snd_soc_jack *jack_headset;
-	struct snd_soc_dai *cpu_dai = snd_soc_rtd_to_cpu(rtd, 0);
+	struct snd_soc_dai *cpu_dai = asoc_rtd_to_cpu(rtd, 0);
 	struct snd_soc_dai *codec_dai;
 	int ret, irq, i;
 	struct snd_soc_jack_pin *pins;
@@ -970,6 +977,10 @@ static int rk_multicodecs_probe(struct platform_device *pdev)
 	snd_soc_card_set_drvdata(card, mc_data);
 	platform_set_drvdata(pdev, mc_data);
 
+	ret = snd_soc_of_parse_aux_devs(card, "rockchip,aux-devs");
+	if (ret)
+		dev_warn(&pdev->dev, "Audio aux devs invalid/unspecified\n");
+
 	ret = devm_snd_soc_register_card(&pdev->dev, card);
 	if (ret) {
 		dev_err(&pdev->dev, "Failed to register card: %d\n", ret);
@@ -984,11 +995,13 @@ static int rk_multicodecs_probe(struct platform_device *pdev)
 	return ret;
 }
 
-static void rk_multicodec_remove(struct platform_device *pdev)
+static int rk_multicodec_remove(struct platform_device *pdev)
 {
 	struct multicodecs_data *mc_data = platform_get_drvdata(pdev);
 
 	cancel_delayed_work_sync(&mc_data->handler);
+
+	return 0;
 }
 
 static void rk_multicodec_shutdown(struct platform_device *pdev)
@@ -1016,21 +1029,7 @@ static struct platform_driver rockchip_multicodecs_driver = {
 	},
 };
 
-#ifdef CONFIG_INITCALL_ASYNC
-static int __init rockchip_multicodecs_driver_init(void)
-{
-	return platform_driver_register(&rockchip_multicodecs_driver);
-}
-late_initcall(rockchip_multicodecs_driver_init);
-
-static void __exit rockchip_multicodecs_driver_exit(void)
-{
-	platform_driver_unregister(&rockchip_multicodecs_driver);
-}
-module_exit(rockchip_multicodecs_driver_exit);
-#else
 module_platform_driver(rockchip_multicodecs_driver);
-#endif
 
 MODULE_AUTHOR("Sugar Zhang <sugar.zhang@rock-chips.com>");
 MODULE_DESCRIPTION("Rockchip General Multicodecs ASoC driver");
