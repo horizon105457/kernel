@@ -226,13 +226,14 @@ static void winbond_nor_late_init(struct spi_nor *nor)
 		nor->params->otp.ops = &winbond_nor_otp_ops;
 }
 
-static void winbond_nor_post_sfdp(struct spi_nor *nor)
+static int winbond_nor_post_sfdp(struct spi_nor *nor)
 {
 	/*
 	 * All winbond flash support 35H command, but some flash do
 	 * not accurately feedback information after SDFP param parsing.
 	 */
 	nor->flags &= ~SNOR_F_NO_READ_CR;
+	return 0;
 }
 
 static const struct spi_nor_fixups winbond_nor_fixups = {

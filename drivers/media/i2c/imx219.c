@@ -1141,3 +1141,6 @@ module_i2c_driver(imx219_i2c_driver);
 MODULE_DESCRIPTION("Sony IMX219 Camera driver");
 MODULE_AUTHOR("Guennadi Liakhovetski <g.liakhovetski@gmx.de>");
 MODULE_LICENSE("GPL v2");
+	if (IS_ERR(imx219->reset_gpio))
+		return dev_err_probe(dev, PTR_ERR(imx219->reset_gpio),
+				     "failed to get reset gpio\n");
