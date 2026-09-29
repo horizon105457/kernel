@@ -142,3 +142,9 @@ config OF_NUMA
 	bool
 
 endif # OF
+
+config OF_CONFIGFS
+	bool "Configfs Overlay"
+	depends on OF && CONFIGFS_FS
+	help
+	  Allow runtime device tree overlay manipulation via configfs.

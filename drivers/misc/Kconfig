@@ -647,3 +647,9 @@ source "drivers/misc/pvpanic/Kconfig"
 source "drivers/misc/mchp_pci1xxxx/Kconfig"
 source "drivers/misc/keba/Kconfig"
 endmenu
+
+config OVER_TEMP_SHUTDOWN
+	tristate "Orange Pi over temp shutdown"
+	depends on OF && GPIOLIB
+	help
+	  Over temperature protection driver.

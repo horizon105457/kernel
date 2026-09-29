@@ -1138,3 +1138,9 @@ config FUEL_GAUGE_MM8013
 	  capacity, etc.
 
 endif # POWER_SUPPLY
+
+config CHARGER_BQ25713
+	tristate "TI BQ25713 battery charger"
+	depends on REGMAP_I2C
+	help
+	  BQ25713 charger driver.
