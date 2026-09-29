@@ -534,3 +534,9 @@ source "drivers/misc/uacce/Kconfig"
 source "drivers/misc/pvpanic/Kconfig"
 source "drivers/misc/mchp_pci1xxxx/Kconfig"
 endmenu
+
+config OVER_TEMP_SHUTDOWN
+	tristate "Orange Pi Ai MAX over temp shutdown"
+	depends on (OF && GPIOLIB)
+	help
+	  This driver supports over temp shutdown.
