@@ -636,13 +636,7 @@
         rockchip,dp-lane-mux = <2 3>;
 };
 
-&usbdp_phy0_dp {
-        status = "okay";
-};
-
-&usbdp_phy0_u3 {
-        status = "okay";
-};
+/* 6.12 合并了 DP/USB3 PHY，usbdp_phy0 已覆盖 */
 
 &usbdrd3_0 {
 	status = "okay";
