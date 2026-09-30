@@ -531,13 +531,7 @@
 	status = "okay";
 };
 
-&usbdp_phy0_dp {
-	status = "okay";
-};
-
-&usbdp_phy0_u3 {
-	status = "okay";
-};
+/* 6.12 已合并 DP/USB3 为单一 usbdp_phy0 节点，无需分别使能 */
 
 &usbdrd3_0 {
 	status = "okay";
