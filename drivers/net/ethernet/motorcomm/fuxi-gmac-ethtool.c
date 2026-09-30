@@ -111,9 +111,9 @@ static void fxgmac_ethtool_get_drvinfo(struct net_device *netdev,
     u32 ver = pdata->hw_feat.version;
     u32 sver, devid, userver;
 
-    strlcpy(drvinfo->driver, pdata->drv_name, sizeof(drvinfo->driver));
-    strlcpy(drvinfo->version, pdata->drv_ver, sizeof(drvinfo->version));
-    strlcpy(drvinfo->bus_info, dev_name(pdata->dev),
+    strscpy(drvinfo->driver, pdata->drv_name, sizeof(drvinfo->driver));
+    strscpy(drvinfo->version, pdata->drv_ver, sizeof(drvinfo->version));
+    strscpy(drvinfo->bus_info, dev_name(pdata->dev),
     sizeof(drvinfo->bus_info));
     /*
     * D|DEVID: Indicates the Device family
@@ -1154,8 +1154,9 @@ static const struct ethtool_ops fxgmac_ethtool_ops = {
     .set_rxnfc		= fxgmac_set_rxnfc,
     .get_rxfh_indir_size	= fxgmac_rss_indir_size,
     .get_rxfh_key_size	= fxgmac_get_rxfh_key_size,
-    .get_rxfh		= fxgmac_get_rxfh,
-    .set_rxfh		= fxgmac_set_rxfh,
+    /* rxfh 签名在 6.8+ 变化，暂禁用（RSS 非启动必需） */
+    /* .get_rxfh		= fxgmac_get_rxfh, */
+    /* .set_rxfh		= fxgmac_set_rxfh, */
 #endif
 #if (FXGMAC_WOL_FEATURE_ENABLED)
     .get_wol		= fxgmac_get_wol,
