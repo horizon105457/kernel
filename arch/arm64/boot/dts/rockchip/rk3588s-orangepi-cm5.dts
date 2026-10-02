@@ -799,12 +799,38 @@
 	pinctrl-0 = <&i2c7m3_xfer>;
 };
 
+/* Debug console: ttyS2 @1500000 (cmdline earlycon/console 0xfeb50000);
+ * uart2 m0 on GPIO0_B5/B6 - was left disabled by the earlier dts pruning,
+ * which would have left the board without a serial console on first boot.
+ */
+&uart2 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart2m0_xfer>;
+};
+
+/* MiniCoreV2 carrier UARTs (board asset, manual p2-3):
+ *   UART1 M1: GPIO1_B6/B7 (back header, dedicated)
+ *   UART4 M2: GPIO1_B2/B3 (back header, shared pads with SPI0-M2 which stays off)
+ *   UART6 M1: GPIO1_A0/A1 (back header, I2C2 uses m0 pads on GPIO0 - no conflict)
+ */
+&uart1 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart1m1_xfer>;
+};
+
 &uart4 {
-	status = "disabled";
+	status = "okay";
 	pinctrl-names = "default";
 	pinctrl-0 = <&uart4m2_xfer>;
 };
 
+&uart6 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart6m1_xfer>;
+};
 
 &uart7 {
 	status = "disabled";
