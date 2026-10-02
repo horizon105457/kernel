@@ -134,6 +134,8 @@ CONFIG_RFKILL=y
 # 0bda:c820; 固件 rtl8821c_fw.bin 经构建仓板级通道 BOARD_FIRMWARE_PACKAGES 提供）
 # MAC80211 为 rtw88 硬依赖——vendor 树只带 FullMAC 的 bcmdhd, 缺它符号被静默丢弃
 CONFIG_MAC80211=y
+# RTW88 为 menuconfig 父符号, 子项在 if RTW88 块内——父未开则子全被静默丢弃
+CONFIG_RTW88=y
 CONFIG_RTW88_8821CU=m
 CONFIG_RFKILL_RK=y
 CONFIG_PCI=y
