@@ -2950,7 +2950,9 @@
 	};
 
 	gpu: gpu@fb000000 {
-		compatible = "arm,mali-valhall";
+		/* 主线 panthor 绑定（G610/CSF; 原 arm,mali-valhall 为 vendor kbase 绑定,
+		   两条路线互斥——本仓走 panthor+mesa 开源栈, 2026-10-03 GPU 无驱动修复） */
+		compatible = "rockchip,rk3588-mali";
 		reg = <0x0 0xfb000000 0x0 0x200000>;
 		interrupts = <GIC_SPI 94 IRQ_TYPE_LEVEL_HIGH>,
 			     <GIC_SPI 93 IRQ_TYPE_LEVEL_HIGH>,
