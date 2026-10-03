@@ -44,9 +44,9 @@
 
 &i2c4 {
 	status = "okay";
-	/* 修复 vendor typo: ddpinctrl-names → pinctrl-names（i2c4 m3 引脚 mux 此前未生效） */
+	/* GPIO1_A3 被自定义开关占用, i2c4 从 m3 移到 m0; typo 已修 */
 	pinctrl-names = "default";
-	pinctrl-0 = <&i2c4m3_xfer>;
+	pinctrl-0 = <&i2c4m0_xfer>;
 
 	/* MiniCoreV2 MIPI CSI1: OV13855（手册 p2 "给标有香橙派 5 使用的 OV13855/OV13850";
 	   SDK rk3588s-tablet 参考节点: addr=0x10, xvclk from CLK_MIPI_CAMARAOUT_M2, 2-lane） */

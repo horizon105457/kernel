@@ -2952,12 +2952,12 @@
 	gpu: gpu@fb000000 {
 		/* 主线 panthor 绑定（G610/CSF; 原 arm,mali-valhall 为 vendor kbase 绑定,
 		   两条路线互斥——本仓走 panthor+mesa 开源栈, 2026-10-03 GPU 无驱动修复） */
-		compatible = "rockchip,rk3588-mali";
+		compatible = "rockchip,rk3588-mali", "arm,mali-valhall-csf";
 		reg = <0x0 0xfb000000 0x0 0x200000>;
-		interrupts = <GIC_SPI 94 IRQ_TYPE_LEVEL_HIGH>,
+		interrupts = <GIC_SPI 92 IRQ_TYPE_LEVEL_HIGH>,
 			     <GIC_SPI 93 IRQ_TYPE_LEVEL_HIGH>,
-			     <GIC_SPI 92 IRQ_TYPE_LEVEL_HIGH>;
-		interrupt-names = "GPU", "MMU", "JOB";
+			     <GIC_SPI 94 IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-names = "job", "mmu", "gpu";
 
 		clocks = <&scmi_clk SCMI_CLK_GPU>, <&cru CLK_GPU_COREGROUP>,
 			 <&cru CLK_GPU_STACKS>;
@@ -2967,7 +2967,7 @@
 		   第4时钟 CLK_GPU 为 vendor kbase 遗产, panthor 不消费, 已删 */
 		clock-names = "core", "coregroup", "stacks";
 		assigned-clocks = <&scmi_clk SCMI_CLK_GPU>;
-		assigned-clock-rates = <200000000>;
+		assigned-clock-rates = <300000000>;
 		power-domains = <&power RK3588_PD_GPU>;
 		/* panthor 走标准 OPP 框架——vendor gpu_opp_table 的 nvmem/pvtm/supported-hw
 		   扩展无法被标准解析（probe -2 "no supported OPPs", 2026-10-03 实机）。
@@ -2976,8 +2976,6 @@
 		#cooling-cells = <2>;
 		dynamic-power-coefficient = <2982>;
 
-		upthreshold = <30>;
-		downdifferential = <10>;
 
 		status = "disabled";
 	};
@@ -4214,7 +4212,7 @@
 			      "hclk0", "hclk1",
 			      "hclk2", "pclk";
 		assigned-clocks = <&scmi_clk SCMI_CLK_NPU>;
-		assigned-clock-rates = <200000000>;
+		assigned-clock-rates = <300000000>;
 		resets = <&cru SRST_A_RKNN0>, <&cru SRST_A_RKNN1>, <&cru SRST_A_RKNN2>,
 			 <&cru SRST_H_RKNN0>, <&cru SRST_H_RKNN1>, <&cru SRST_H_RKNN2>;
 		reset-names = "srst_a0", "srst_a1", "srst_a2",

@@ -44,7 +44,8 @@
 
 &i2c3 {
 	status = "okay";
-	ddpinctrl-names = "default";
+	/* 修复 vendor typo */
+	pinctrl-names = "default";
 	pinctrl-0 = <&i2c3m2_xfer>;
 
 	ov5647_2: ov5647-2@36 {
