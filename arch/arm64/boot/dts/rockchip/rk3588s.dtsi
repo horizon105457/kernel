@@ -2979,30 +2979,38 @@
 		status = "disabled";
 	};
 
-	/* panthor 标准 OPP 表: 无 nvmem/pvtm 扩展, 频率阶梯与 vendor SDK 同源 */
+	/* panthor 标准 OPP 表: 频率+电压（opp-microvolt 取 SDK 基准值, 无 nvmem 分级;
+	   panthor 走标准 OPP 框架, 有 mali-supply 时必须有 opp-microvolt 否则 -22） */
 	gpu_std_opp_table: gpu-std-opp-table {
 		compatible = "operating-points-v2";
 
 		opp-300000000 {
 			opp-hz = /bits/ 64 <300000000>;
+			opp-microvolt = <675000 675000 850000>;
 		};
 		opp-400000000 {
 			opp-hz = /bits/ 64 <400000000>;
+			opp-microvolt = <675000 675000 850000>;
 		};
 		opp-500000000 {
 			opp-hz = /bits/ 64 <500000000>;
+			opp-microvolt = <675000 675000 850000>;
 		};
 		opp-600000000 {
 			opp-hz = /bits/ 64 <600000000>;
+			opp-microvolt = <675000 675000 850000>;
 		};
 		opp-700000000 {
 			opp-hz = /bits/ 64 <700000000>;
+			opp-microvolt = <700000 700000 850000>;
 		};
 		opp-800000000 {
 			opp-hz = /bits/ 64 <800000000>;
+			opp-microvolt = <750000 750000 850000>;
 		};
 		opp-900000000 {
 			opp-hz = /bits/ 64 <900000000>;
+			opp-microvolt = <800000 800000 850000>;
 		};
 	};
 
