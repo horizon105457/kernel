@@ -2966,7 +2966,10 @@
 		assigned-clocks = <&scmi_clk SCMI_CLK_GPU>;
 		assigned-clock-rates = <200000000>;
 		power-domains = <&power RK3588_PD_GPU>;
-		operating-points-v2 = <&gpu_opp_table>;
+		/* panthor 走标准 OPP 框架——vendor gpu_opp_table 的 nvmem/pvtm/supported-hw
+		   扩展无法被标准解析（probe -2 "no supported OPPs", 2026-10-03 实机）。
+		   频率阶梯取自 vendor SDK 同源（300-900MHz）; 电压由 mali-supply 域管理 */
+		operating-points-v2 = <&gpu_std_opp_table>;
 		#cooling-cells = <2>;
 		dynamic-power-coefficient = <2982>;
 
@@ -2974,6 +2977,33 @@
 		downdifferential = <10>;
 
 		status = "disabled";
+	};
+
+	/* panthor 标准 OPP 表: 无 nvmem/pvtm 扩展, 频率阶梯与 vendor SDK 同源 */
+	gpu_std_opp_table: gpu-std-opp-table {
+		compatible = "operating-points-v2";
+
+		opp-300000000 {
+			opp-hz = /bits/ 64 <300000000>;
+		};
+		opp-400000000 {
+			opp-hz = /bits/ 64 <400000000>;
+		};
+		opp-500000000 {
+			opp-hz = /bits/ 64 <500000000>;
+		};
+		opp-600000000 {
+			opp-hz = /bits/ 64 <600000000>;
+		};
+		opp-700000000 {
+			opp-hz = /bits/ 64 <700000000>;
+		};
+		opp-800000000 {
+			opp-hz = /bits/ 64 <800000000>;
+		};
+		opp-900000000 {
+			opp-hz = /bits/ 64 <900000000>;
+		};
 	};
 
 	gpu_opp_table: gpu-opp-table {
