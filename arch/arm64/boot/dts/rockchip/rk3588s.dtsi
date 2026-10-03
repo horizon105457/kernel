@@ -2960,9 +2960,12 @@
 		interrupt-names = "GPU", "MMU", "JOB";
 
 		clocks = <&scmi_clk SCMI_CLK_GPU>, <&cru CLK_GPU_COREGROUP>,
-			 <&cru CLK_GPU_STACKS>, <&cru CLK_GPU>;
-		clock-names = "clk_mali", "clk_gpu_coregroup",
-			      "clk_gpu_stacks", "clk_gpu";
+			 <&cru CLK_GPU_STACKS>;
+		/* panthor 按名称查找: devm_clk_get(dev,NULL)取第一个 + optional("coregroup"/"stacks")
+		   vendor 命名 clk_mali/clk_gpu_* 不匹配 → NULL → CSF 等待响应挂起(五轮实机:
+		   串口死于 14.6s + 无 HDMI, 即 panthor 首次真正 probe 后系统挂);
+		   第4时钟 CLK_GPU 为 vendor kbase 遗产, panthor 不消费, 已删 */
+		clock-names = "core", "coregroup", "stacks";
 		assigned-clocks = <&scmi_clk SCMI_CLK_GPU>;
 		assigned-clock-rates = <200000000>;
 		power-domains = <&power RK3588_PD_GPU>;
