@@ -9,7 +9,7 @@
 };
 
 &csi2_dphy1 {
-	status = "disabled";
+	status = "okay";
 	ports {
 		#address-cells = <1>;
 		#size-cells = <0>;
@@ -20,7 +20,7 @@
 
 			mipidphy1_in_ucam0: endpoint@0 {
 				reg = <0>;
-				remote-endpoint = <&ov5647_1_out1>;
+				remote-endpoint = <&ov13855_1_out>;
 				data-lanes = <1 2>;
 			};
 
@@ -38,14 +38,36 @@
 		                reg = <0>;
 		                remote-endpoint = <&mipi2_csi2_input>;
 		        };
-		};
+		}
 	};
 };
 
 &i2c4 {
 	status = "okay";
-	ddpinctrl-names = "default";
+	/* 修复 vendor typo: ddpinctrl-names → pinctrl-names（i2c4 m3 引脚 mux 此前未生效） */
+	pinctrl-names = "default";
 	pinctrl-0 = <&i2c4m3_xfer>;
+
+	/* MiniCoreV2 MIPI CSI1: OV13855（手册 p2 "给标有香橙派 5 使用的 OV13855/OV13850";
+	   SDK rk3588s-tablet 参考节点: addr=0x10, xvclk from CLK_MIPI_CAMARAOUT_M2, 2-lane） */
+	ov13855_1: ov13855-1@10 {
+		status = "okay";
+		compatible = "ovti,ov13855";
+		reg = <0x10>;
+		clocks = <&cru CLK_MIPI_CAMARAOUT_M2>;
+		clock-names = "xvclk";
+		pwdn-gpios = <&gpio1 RK_PD0 GPIO_ACTIVE_LOW>;
+		rockchip,camera-module-index = <0>;
+		rockchip,camera-module-facing = "back";
+		rockchip,camera-module-name = "minicore-csi1";
+		rockchip,camera-module-lens-name = "default";
+		port {
+			ov13855_1_out: endpoint {
+				remote-endpoint = <&mipidphy1_in_ucam0>;
+				data-lanes = <1 2>;
+			};
+		};
+	};
 
 	ov5647_1: ov5647-1@36 {
 		status = "disabled";

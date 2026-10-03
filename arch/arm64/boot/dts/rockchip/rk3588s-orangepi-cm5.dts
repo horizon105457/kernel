@@ -148,25 +148,27 @@
 		};
 	};
 
+	/* MiniCoreV2 自定义开关输入 GPIO1_A3（手册 p2 "用户自定义开关"; 上拉+下降沿） */
 	gpio_keys: gpio-keys {
 		compatible = "gpio-keys";
 		pinctrl-names = "default";
-		pinctrl-0 = <&key1_pin>;
-		status = "disabled";
+		pinctrl-0 = <&custom_switch_pin>;
+		status = "okay";
 
 		button@1 {
 			debounce-interval = <50>;
-			gpios = <&gpio3 RK_PC6 GPIO_ACTIVE_LOW>;
-			label = "K1";
+			gpios = <&gpio1 RK_PA3 GPIO_ACTIVE_LOW>;
+			label = "custom-switch";
 			linux,code = <KEY_POWER>;
 			wakeup-source;
 		};
 	};
 
+	/* MiniCoreV2 四线风扇接口: GPIO1_C6=PWM15 输出, GPIO1_A7=TACH 输入（手册 p2-3） */
 	fan: pwm-fan {
 		compatible = "pwm-fan";
 		#cooling-cells = <2>;
-		pwms = <&pwm13 0 20000000 0>;
+		pwms = <&pwm15 0 20000000 0>;
 		cooling-levels = <0 50 100 150 200 255>;
 		rockchip,temp-trips = <
 			50000   1
@@ -176,7 +178,7 @@
 			70000   5
 		>;
 
-		status = "disabled";
+		status = "okay";
 	};
 
 	ext_cam_ov5647_clk: external-camera-ov5647-clock {
@@ -571,9 +573,17 @@
 		};
 	};
 
+	/* MiniCoreV2 自定义开关 GPIO1_A3（上拉输入） */
 	gpio-key {
-		key1_pin: key1-pin {
-			rockchip,pins = <3 RK_PC6 RK_FUNC_GPIO &pcfg_pull_up>;
+		custom_switch_pin: custom-switch-pin {
+			rockchip,pins = <1 RK_PA3 RK_FUNC_GPIO &pcfg_pull_up>;
+		};
+	};
+
+	/* MiniCoreV2 四线风扇 TACH 输入 GPIO1_A7（上拉输入, 中断计频） */
+	fan-tach {
+		fan_tach_pin: fan-tach-pin {
+			rockchip,pins = <1 RK_PA7 RK_FUNC_GPIO &pcfg_pull_up>;
 		};
 	};
 
@@ -772,8 +782,9 @@
 	};
 };
 
+/* MiniCoreV2: pwm13 原引脚(GPIO4_B6)不用, 关停释放 */
 &pwm13 {
-	status = "okay";
+	status = "disabled";
 	pinctrl-names = "active";
 	pinctrl-0 = <&pwm13m1_pins>;
 };
@@ -784,10 +795,11 @@
 	pinctrl-0 = <&pwm14m1_pins>;
 };
 
+/* MiniCoreV2 四线风扇 PWM: GPIO1_C6 = PWM15 m2（手册 p2-3 实证） */
 &pwm15 {
-	status = "disabled";
+	status = "okay";
 	pinctrl-names = "active";
-	pinctrl-0 = <&pwm15m1_pins>;
+	pinctrl-0 = <&pwm15m2_pins>;
 };
 
 &i2c7 {
