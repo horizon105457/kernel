@@ -116,11 +116,12 @@
 		startup-delay-us = <50000>;
 	};
 
+	/* MiniCoreV2 无 LED（SDK 全量比对审计 2026-10-03; 四脚若引排针会被 LED 驱动劫持） */
 	leds: gpio-leds {
 		compatible = "gpio-leds";
 		pinctrl-names = "default";
 		pinctrl-0 =<&leds_gpio>;
-		status = "okay";
+		status = "disabled";
 
 		lan1@0 {
 			gpios = <&gpio0 RK_PC6 GPIO_ACTIVE_LOW>;
@@ -151,7 +152,7 @@
 		compatible = "gpio-keys";
 		pinctrl-names = "default";
 		pinctrl-0 = <&key1_pin>;
-		status = "okay";
+		status = "disabled";
 
 		button@1 {
 			debounce-interval = <50>;
@@ -175,7 +176,7 @@
 			70000   5
 		>;
 
-		status = "okay";
+		status = "disabled";
 	};
 
 	ext_cam_ov5647_clk: external-camera-ov5647-clock {
@@ -441,20 +442,22 @@
 	mem-supply = <&vdd_cpu_big1_mem_s0>;
 };
 
+/* MiniCoreV2 无 PCIe/SATA/USB3-HS——两个 combPHY 均为孤儿, probe 白开时钟 */
 &combphy0_ps {
-	status = "okay";
+	status = "disabled";
 };
 
 &combphy2_psu {
-	status = "okay";
+	status = "disabled";
 };
 
+/* 6.12 适配残留空节点（无 compatible 不会 probe, 纯装饰） */
 &mipi_dcphy0 {
-	status = "okay";
+	status = "disabled";
 };
 
 &mipi_dcphy1 {
-	status = "okay";
+	status = "disabled";
 };
 
 &i2c0 {
@@ -695,14 +698,14 @@
 	status = "okay";
 };
 
+/* MiniCoreV2 双百兆网走 USB r8152, 无 RGMII PHY——GMAC probe 会持续刷
+ * "MDIO device at address 1 is missing" + reset-gpio 误动作 GPIO3_B2 */
 &gmac1 {
-	/* Use rgmii-rxid mode to disable rx delay inside Soc */
 	phy-mode = "rgmii-rxid";
 	clock_in_out = "output";
 
 	snps,reset-gpio = <&gpio3 RK_PB2 GPIO_ACTIVE_LOW>;
 	snps,reset-active-low;
-	/* Reset time is 20ms, 100ms for rtl8211f */
 	snps,reset-delays-us = <0 20000 100000>;
 
 	pinctrl-names = "default";
@@ -711,12 +714,11 @@
 	             &gmac1_rx_bus2
 	             &gmac1_rgmii_clk
 	             &gmac1_rgmii_bus>;
-	
+
 	tx_delay = <0x42>;
-	/* rx_delay = <0x3f>; */
 
 	phy-handle = <&rgmii_phy1>;
-	status = "okay";
+	status = "disabled";
 };
 
 &mdio1 {
@@ -726,6 +728,7 @@
 	};
 };
 
+/* MiniCoreV2 无红外接收头（OPi CM5 大板遗产, SDK 审计 2026-10-03） */
 &pwm7 {
 	compatible = "rockchip,remotectl-pwm";
 	pinctrl-names = "default";
@@ -733,7 +736,7 @@
 	remote_pwm_id = <3>;
 	handle_cpu_id = <1>;
 	remote_support_psci = <0>;
-	status = "okay";
+	status = "disabled";
 
 	ir_key1 {
 		rockchip,usercode = <0xfb04>;
@@ -832,8 +835,9 @@
 	pinctrl-0 = <&uart7m2_xfer>;
 };
 
+/* MiniCoreV2 载板 CAN1（GPIO4_B2=RX_M1 / GPIO4_B3=TX_M1, 手册 p2-3 实证） */
 &can1 {
-	status = "disabled";
+	status = "okay";
 	pinctrl-names = "default";
 	pinctrl-0 = <&can1m1_pins>;
 	assigned-clocks = <&cru CLK_CAN1>;
