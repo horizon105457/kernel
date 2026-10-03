@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 /*
  * Copyright (c) 2021 Rockchip Electronics Co., Ltd.
- *
+ * MiniCoreV2 CSI0-4lan: OV13855 on csi2_dphy0 → mipi0_csi2 (user verified 2026-10-03)
  */
 
 &csi2_dphy0_hw {
 	status = "okay";
 };
 
-&csi2_dphy1 {
+&csi2_dphy0 {
 	status = "okay";
 	ports {
 		#address-cells = <1>;
@@ -18,38 +18,29 @@
 			#address-cells = <1>;
 			#size-cells = <0>;
 
-			mipidphy1_in_ucam0: endpoint@0 {
+			mipidphy0_in_ucam0: endpoint@0 {
 				reg = <0>;
 				remote-endpoint = <&ov13855_1_out>;
-				data-lanes = <1 2>;
-			};
-
-			mipidphy1_in_ucam1: endpoint@1 {
-				reg = <1>;
-				remote-endpoint = <&imx219_1_out1>;
-				data-lanes = <1 2>;
+				data-lanes = <1 2 3 4>;
 			};
 		};
 		port@1 {
-		        reg = <1>;
-		        #address-cells = <1>;
-		        #size-cells = <0>;
-		        csidphy0_out: endpoint@0 {
-		                reg = <0>;
-		                remote-endpoint = <&mipi2_csi2_input>;
-		        };
+			reg = <1>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			csidphy0_out: endpoint@0 {
+				reg = <0>;
+				remote-endpoint = <&mipi0_csi2_input>;
+			};
 		};
 	};
 };
 
 &i2c4 {
 	status = "okay";
-	/* GPIO1_A3 被自定义开关占用, i2c4 从 m3 移到 m0; typo 已修 */
 	pinctrl-names = "default";
 	pinctrl-0 = <&i2c4m0_xfer>;
 
-	/* MiniCoreV2 MIPI CSI1: OV13855（手册 p2 "给标有香橙派 5 使用的 OV13855/OV13850";
-	   SDK rk3588s-tablet 参考节点: addr=0x10, xvclk from CLK_MIPI_CAMARAOUT_M2, 2-lane） */
 	ov13855_1: ov13855-1@10 {
 		status = "okay";
 		compatible = "ovti,ov13855";
@@ -59,57 +50,19 @@
 		pwdn-gpios = <&gpio1 RK_PD0 GPIO_ACTIVE_LOW>;
 		rockchip,camera-module-index = <0>;
 		rockchip,camera-module-facing = "back";
-		rockchip,camera-module-name = "minicore-csi1";
+		rockchip,camera-module-name = "minicore-csi0";
 		rockchip,camera-module-lens-name = "default";
 		port {
 			ov13855_1_out: endpoint {
-				remote-endpoint = <&mipidphy1_in_ucam0>;
-				data-lanes = <1 2>;
-			};
-		};
-	};
-
-	ov5647_1: ov5647-1@36 {
-		status = "disabled";
-		compatible = "ovti,ov5647";
-		reg = <0x36>;
-		clocks = <&ext_cam_ov5647_clk>;
-		clock-names = "ext_cam_ov5647_clk";
-		pwdn-gpios = <&gpio1 RK_PD0 GPIO_ACTIVE_LOW>;
-		rockchip,camera-module-index = <0>;
-		rockchip,camera-module-facing = "back";
-		rockchip,camera-module-name = "rpi-camera-v1";
-		rockchip,camera-module-lens-name = "default";
-		port {
-			ov5647_1_out1: endpoint {
-				remote-endpoint = <&mipidphy1_in_ucam0>;
-				data-lanes = <1 2>;
-			};
-		};
-	};
-
-	imx219_1: imx219-1@10 {
-		status = "disabled";
-		compatible = "sony,imx219";
-		reg = <0x10>;
-		clocks = <&ext_cam_ov5647_clk>;
-		clock-names = "ext_cam_ov5647_clk";
-		pwdn-gpios = <&gpio1 RK_PD0 GPIO_ACTIVE_LOW>;
-		rockchip,camera-module-index = <0>;
-		rockchip,camera-module-facing = "back";
-		rockchip,camera-module-name = "rpi-camera-v2";
-		rockchip,camera-module-lens-name = "default";
-		port {
-			imx219_1_out1: endpoint {
-				remote-endpoint = <&mipidphy1_in_ucam1>;
-				data-lanes = <1 2>;
+				remote-endpoint = <&mipidphy0_in_ucam0>;
+				data-lanes = <1 2 3 4>;
 			};
 		};
 	};
 };
 
-&mipi2_csi2 {
-	status = "disabled";
+&mipi0_csi2 {
+	status = "okay";
 	ports {
 		#address-cells = <1>;
 		#size-cells = <0>;
@@ -117,7 +70,7 @@
 			reg = <0>;
 			#address-cells = <1>;
 			#size-cells = <0>;
-			mipi2_csi2_input: endpoint@1 {
+			mipi0_csi2_input: endpoint@1 {
 				reg = <1>;
 				remote-endpoint = <&csidphy0_out>;
 			};
@@ -126,40 +79,53 @@
 			reg = <1>;
 			#address-cells = <1>;
 			#size-cells = <0>;
-			mipi2_csi2_output: endpoint@0 {
+			mipi0_csi2_output: endpoint@0 {
 				reg = <0>;
-				remote-endpoint = <&cif_mipi_in2>;
+				remote-endpoint = <&rkcif_mipi_lvds0_in>;
 			};
 		};
 	};
 };
 
-&rkcif_mipi_lvds2 {
-	status = "disabled";
-	port {
-		cif_mipi_in2: endpoint {
-			remote-endpoint = <&mipi2_csi2_output>;
+&rkcif_mipi_lvds {
+	status = "okay";
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		port@0 {
+			reg = <0>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			rkcif_mipi_lvds0_in: endpoint@0 {
+				reg = <0>;
+				remote-endpoint = <&mipi0_csi2_output>;
+			};
 		};
-	};
-};
-
-&rkcif_mipi_lvds2_sditf {
-	status = "disabled";
-	port {
-		mipi2_lvds_sditf: endpoint {
-			remote-endpoint = <&isp0_vir0>;
+		port@1 {
+			reg = <1>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			rkcif_mipi_lvds0_out: endpoint@0 {
+				reg = <0>;
+				remote-endpoint = <&rkisp0_vir0_in>;
+			};
 		};
 	};
 };
 
 &rkisp0_vir0 {
-	status = "disabled";
-	port {
+	status = "okay";
+	ports {
 		#address-cells = <1>;
 		#size-cells = <0>;
-		isp0_vir0: endpoint@0 {
+		port@0 {
 			reg = <0>;
-			remote-endpoint = <&mipi2_lvds_sditf>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			rkisp0_vir0_in: endpoint@0 {
+				reg = <0>;
+				remote-endpoint = <&rkcif_mipi_lvds0_out>;
+			};
 		};
 	};
 };
