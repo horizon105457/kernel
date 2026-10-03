@@ -38,7 +38,7 @@
 		                reg = <0>;
 		                remote-endpoint = <&mipi2_csi2_input>;
 		        };
-		}
+		};
 	};
 };
 
